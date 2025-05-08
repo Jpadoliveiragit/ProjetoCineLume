@@ -1,0 +1,49 @@
+package com.cinelume.view;
+
+import com.cinelume.controller.UsuarioController;
+import com.cinelume.util.InputUtils;
+
+public class MenuView {
+    private final UsuarioController usuarioController;
+    
+    public MenuView(UsuarioController usuarioController) {
+        this.usuarioController = usuarioController;
+    }
+    
+    public void exibirBoasVindas() {
+        System.out.println("\n===================================");
+        System.out.println("    CINELUME - GERENCIADOR DE SÉRIES");
+        System.out.println("===================================");
+    }
+    
+    public void realizarLogin() {
+        String nome = InputUtils.lerString("Digite seu nome: ");
+        usuarioController.login(nome);
+        System.out.println("\nBem-vindo, " + nome + "!");
+    }
+    
+    public void exibirMenuPrincipal() {
+        int opcao;
+        do {
+            System.out.println("\n======== MENU PRINCIPAL ========");
+            System.out.println("1. Buscar Séries");
+            System.out.println("2. Meus Favoritos");
+            System.out.println("3. Sair");
+            
+            opcao = InputUtils.lerInt("Escolha uma opção: ", 1, 3);
+            
+            switch(opcao) {
+                case 1:
+                    new SerieView().buscarSeries();
+                    break;
+                case 2:
+                    System.out.println("\n--- MEUS FAVORITOS ---");
+                    // Implementar exibição de favoritos
+                    break;
+            }
+        } while(opcao != 3);
+        
+        usuarioController.salvarDados();
+        System.out.println("Saindo do CineLume...");
+    }
+}

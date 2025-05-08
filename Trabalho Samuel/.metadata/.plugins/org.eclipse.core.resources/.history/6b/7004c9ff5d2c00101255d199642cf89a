@@ -1,0 +1,5 @@
+package com.cinelume.model;
+
+public class Usuario {
+
+}

@@ -1,0 +1,15 @@
+package com.cinelume;
+
+import com.cinelume.controller.UsuarioController;
+import com.cinelume.view.MenuView;
+
+public class Main {
+    public static void main(String[] args) {
+        UsuarioController usuarioController = new UsuarioController();
+        MenuView menuView = new MenuView(usuarioController);
+        
+        menuView.exibirBoasVindas();
+        menuView.realizarLogin();
+        menuView.exibirMenuPrincipal();
+    }
+}
