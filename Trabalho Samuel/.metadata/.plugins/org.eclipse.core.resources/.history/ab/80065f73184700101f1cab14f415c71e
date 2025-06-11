@@ -1,0 +1,111 @@
+package com.cinelume.controller;
+
+import com.cinelume.model.Serie;
+import com.cinelume.model.Usuario;
+import com.cinelume.util.JsonDataManager;
+import java.util.List;
+
+public class UsuarioController {
+    private Usuario usuarioAtual;
+    
+    /**
+     * Realiza o login do usuário, carregando seus dados ou criando um novo perfil
+     * @param nomeUsuario Nome do usuário para login
+     */
+    public void login(String nomeUsuario) {
+        try {
+            if (nomeUsuario == null || nomeUsuario.trim().isEmpty()) {
+                throw new IllegalArgumentException("Nome de usuário não pode ser vazio");
+            }
+            
+            this.usuarioAtual = JsonDataManager.carregarUsuario(nomeUsuario + ".json");
+            if (this.usuarioAtual == null) {
+                this.usuarioAtual = new Usuario(nomeUsuario);
+                System.out.println("Novo usuário criado: " + nomeUsuario);
+            }
+        } catch (Exception e) {
+            System.err.println("Erro ao carregar usuário: " + e.getMessage());
+            this.usuarioAtual = new Usuario(nomeUsuario);
+        }
+    }
+    
+    /**
+     * Adiciona uma série a uma lista específica do usuário
+     * @param serie Série a ser adicionada
+     * @param tipoLista Tipo de lista ("watchlist", "watched" ou "favorites")
+     * @throws IllegalStateException Se nenhum usuário estiver logado
+     * @throws IllegalArgumentException Se os parâmetros forem inválidos
+     */
+    public void adicionarSerieLista(Serie serie, String tipoLista) {
+        verificarUsuarioLogado();
+        validarParametros(serie, tipoLista);
+        
+        usuarioAtual.adicionarSerie(serie, tipoLista);
+        salvarDados();
+    }
+    
+    /**
+     * Obtém a lista de séries do usuário conforme o tipo especificado
+     * @param tipoLista Tipo de lista ("watchlist", "watched" ou "favorites")
+     * @return Lista de séries correspondente
+     */
+    public List<Serie> getListaSeries(String tipoLista) {
+        verificarUsuarioLogado();
+        return usuarioAtual.getLista(tipoLista);
+    }
+    
+    /**
+     * Remove uma série de uma lista específica do usuário
+     * @param serie Série a ser removida
+     * @param tipoLista Tipo de lista ("watchlist", "watched" ou "favorites")
+     */
+    public void removerSerieLista(Serie serie, String tipoLista) {
+        verificarUsuarioLogado();
+        validarParametros(serie, tipoLista);
+        
+        usuarioAtual.getLista(tipoLista).remove(serie);
+        salvarDados();
+    }
+    
+    /**
+     * Salva os dados do usuário atual no arquivo JSON
+     */
+    public void salvarDados() {
+        try {
+            verificarUsuarioLogado();
+            JsonDataManager.salvarUsuario(
+                usuarioAtual.getNome() + ".json", 
+                usuarioAtual
+            );
+        } catch (Exception e) {
+            System.err.println("Erro ao salvar dados: " + e.getMessage());
+        }
+    }
+    
+    public Usuario getUsuarioAtual() {
+        return usuarioAtual;
+    }
+    
+    // Métodos auxiliares privados
+    private void verificarUsuarioLogado() {
+        if (usuarioAtual == null) {
+            throw new IllegalStateException("Nenhum usuário logado. Faça login primeiro.");
+        }
+    }
+    
+    private void validarParametros(Serie serie, String tipoLista) {
+        if (serie == null) {
+            throw new IllegalArgumentException("A série não pode ser nula");
+        }
+        
+        if (tipoLista == null || tipoLista.trim().isEmpty()) {
+            throw new IllegalArgumentException("Tipo de lista inválido");
+        }
+        
+        if (!tipoLista.equalsIgnoreCase("watchlist") &&
+            !tipoLista.equalsIgnoreCase("watched") &&
+            !tipoLista.equalsIgnoreCase("favorites")) {
+            throw new IllegalArgumentException("Tipo de lista deve ser: watchlist, watched ou favorites");
+        }
+    }
+}

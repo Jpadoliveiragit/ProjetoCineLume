@@ -6,6 +6,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="resources"/>
 	<classpathentry kind="lib" path="C:/Users/ALUNO/Downloads/okhttp-4.9.3 (1).jar"/>
 	<classpathentry kind="lib" path="C:/Users/ALUNO/Downloads/okio-2.10.0.jar"/>
 	<classpathentry kind="lib" path="C:/Users/ALUNO/Downloads/kotlin-stdlib-1.6.0.jar"/>

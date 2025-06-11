@@ -7,28 +7,18 @@ public class InputUtils {
     
     public static String lerString(String mensagem) {
         System.out.print(mensagem);
-        String input = scanner.nextLine().trim();
-        
-        while(input.isEmpty()) {
-            System.out.println("Erro: Campo obrigatório!");
-            System.out.print(mensagem);
-            input = scanner.nextLine().trim();
-        }
-        
-        return input;
+        return scanner.nextLine().trim();
     }
     
     public static int lerInt(String mensagem, int min, int max) {
-        while(true) {
+        while (true) {
             System.out.print(mensagem);
-            String input = scanner.nextLine().trim();
-            
             try {
-                int valor = Integer.parseInt(input);
-                if(valor >= min && valor <= max) return valor;
-                System.out.printf("Digite um número entre %d e %d.\n", min, max);
-            } catch(NumberFormatException e) {
-                System.out.println("Entrada inválida. Digite um número.");
+                int valor = Integer.parseInt(scanner.nextLine());
+                if (valor >= min && valor <= max) return valor;
+                System.out.printf("Digite um número entre %d e %d\n", min, max);
+            } catch (NumberFormatException e) {
+                System.out.println("Valor inválido! Digite um número.");
             }
         }
     }

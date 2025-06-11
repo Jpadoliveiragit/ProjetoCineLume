@@ -1,0 +1,31 @@
+[
+  {
+    "nome": "UsuarioTeste",
+    "favoritos": [
+      {
+        "id": 169,
+        "name": "Breaking Bad",
+        "language": "English",
+        "genres": ["Drama", "Crime", "Thriller"],
+        "rating": {"average": 9.5},
+        "status": "Ended",
+        "premiered": "2008-01-20",
+        "ended": "2013-09-29",
+        "network": {"name": "AMC"},
+        "summary": "A chemistry teacher diagnosed with cancer turns to manufacturing drugs to secure his family's future."
+      }
+    ],
+    "assistidas": [
+      {
+        "id": 169,
+        "name": "Breaking Bad"
+      }
+    ],
+    "paraAssistir": [
+      {
+        "id": 82,
+        "name": "Game of Thrones"
+      }
+    ]
+  }
+]

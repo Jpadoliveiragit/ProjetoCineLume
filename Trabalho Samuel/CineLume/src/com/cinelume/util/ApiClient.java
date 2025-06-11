@@ -7,8 +7,9 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import java.net.URLEncoder;
-import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Objects;
 
 public class ApiClient {
     private static final String BASE_URL = "https://api.tvmaze.com";
@@ -16,39 +17,41 @@ public class ApiClient {
     private static final Gson gson = new Gson();
 
     public static List<Serie> buscarSeries(String query) {
-        List<Serie> series = new ArrayList<>();
         try {
-            String encodedQuery = URLEncoder.encode(query, "UTF-8");
+            String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
             String url = BASE_URL + "/search/shows?q=" + encodedQuery;
-            
             Request request = new Request.Builder()
                 .url(url)
                 .build();
 
             try (Response response = client.newCall(request).execute()) {
-                if (!response.isSuccessful()) {
-                    System.err.println("Erro na API: " + response.code());
-                    return series;
+                if (!response.isSuccessful() || response.body() == null) {
+                    return List.of();
+                }
+                
+                String json = Objects.requireNonNull(response.body()).string();
+                List<SearchResult> results = gson.fromJson(
+                    json, 
+                    new TypeToken<List<SearchResult>>(){}.getType()
+                );
+                
+                if (results == null) {
+                    return List.of();
                 }
 
-                String json = response.body().string();
-                TypeToken<List<SearchResult>> typeToken = new TypeToken<>() {};
-                List<SearchResult> resultados = gson.fromJson(json, typeToken.getType());
-
-                for (SearchResult result : resultados) {
-                    if (result.show != null) {
-                        series.add(result.show);
-                    }
-                }
+                return results.stream()
+                    .map(result -> result.show)
+                    .filter(Objects::nonNull)
+                    .toList();
             }
         } catch (Exception e) {
-            System.err.println("Erro na busca: " + e.getMessage());
+            System.err.println("Erro na busca de séries: " + e.getMessage());
+            return List.of();
         }
-        return series;
     }
 
-    // Classe para mapear o resultado da busca
     private static class SearchResult {
         Serie show;
+        public SearchResult() {}
     }
 }

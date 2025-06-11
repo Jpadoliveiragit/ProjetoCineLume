@@ -9,20 +9,16 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class JsonDataManager {
-    private static final Gson gson = new GsonBuilder()
-        .setPrettyPrinting()
-        .create();
-
+    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    
     public static void salvarUsuario(String arquivo, Usuario usuario) throws IOException {
         try (FileWriter writer = new FileWriter(arquivo)) {
             gson.toJson(usuario, writer);
         }
     }
-
+    
     public static Usuario carregarUsuario(String arquivo) throws IOException {
-        if (!Files.exists(Paths.get(arquivo))) {
-            return null;
-        }
+        if (!Files.exists(Paths.get(arquivo))) return null;
         String json = new String(Files.readAllBytes(Paths.get(arquivo)));
         return gson.fromJson(json, Usuario.class);
     }

@@ -1,0 +1,60 @@
+package com.cinelume.controller;
+
+import com.cinelume.model.Serie;
+import com.cinelume.model.Usuario;
+import com.cinelume.util.JsonDataManager;
+
+public class UsuarioController {
+    private Usuario usuarioAtual;
+    
+    public void login(String nomeUsuario) {
+        try {
+            this.usuarioAtual = JsonDataManager.carregarUsuario(nomeUsuario + ".json");
+            if (this.usuarioAtual == null) {
+                this.usuarioAtual = new Usuario(nomeUsuario);
+            }
+        } catch (Exception e) {
+            System.err.println("Erro ao carregar usuário: " + e.getMessage());
+            this.usuarioAtual = new Usuario(nomeUsuario);
+        }
+    }
+    
+    /**
+     * Adiciona uma série a uma lista específica do usuário
+     * @param serie Série a ser adicionada
+     * @param tipoLista Tipo de lista ("watchlist", "watched" ou "favorites")
+     * @throws IllegalStateException Se nenhum usuário estiver logado
+     * @throws IllegalArgumentException Se os parâmetros forem inválidos
+     */
+    public void adicionarSerieLista(Serie serie, String tipoLista) {
+        if (usuarioAtual == null) {
+            throw new IllegalStateException("Nenhum usuário logado. Faça login primeiro.");
+        }
+        
+        if (serie == null) {
+            throw new IllegalArgumentException("A série não pode ser nula");
+        }
+        
+        if (tipoLista == null || tipoLista.trim().isEmpty()) {
+            throw new IllegalArgumentException("Tipo de lista inválido");
+        }
+
+        usuarioAtual.adicionarSerie(serie, tipoLista);
+        salvarDados();
+    }
+    
+    public void salvarDados() {
+        try {
+            JsonDataManager.salvarUsuario(
+                usuarioAtual.getNome() + ".json", 
+                usuarioAtual
+            );
+        } catch (Exception e) {
+            System.err.println("Erro ao salvar dados: " + e.getMessage());
+        }
+    }
+    
+    public Usuario getUsuarioAtual() {
+        return usuarioAtual;
+    }
+}

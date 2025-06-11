@@ -1,0 +1,180 @@
+package com.cinelume.view;
+
+import com.cinelume.controller.SerieController;
+import com.cinelume.controller.UsuarioController;
+import com.cinelume.model.Serie;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Scanner;
+
+public class MenuView {
+    private final Scanner scanner;
+    private final UsuarioController usuarioController;
+    private final SerieController serieController;
+
+    // ... (construtor e outros métodos existentes permanecem iguais) ...
+
+    private void exibirMenuListas() {
+        if (usuarioController.getUsuarioAtual() == null) {
+            System.out.println("\n⚠ Você precisa estar logado para acessar suas listas.");
+            return;
+        }
+
+        int opcao;
+        do {
+            System.out.println("\n📚 MINHAS LISTAS");
+            System.out.println("1. Assistir mais tarde");
+            System.out.println("2. Já assistidas");
+            System.out.println("3. Favoritas");
+            System.out.println("4. Voltar");
+            System.out.print("Escolha uma lista (1-4): ");
+
+            try {
+                opcao = Integer.parseInt(scanner.nextLine());
+
+                switch (opcao) {
+                    case 1:
+                        exibirLista("watchlist");
+                        break;
+                    case 2:
+                        exibirLista("watched");
+                        break;
+                    case 3:
+                        exibirLista("favorites");
+                        break;
+                    case 4:
+                        break;
+                    default:
+                        System.out.println("⚠ Opção inválida.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("⚠ Por favor, digite um número entre 1 e 4.");
+                opcao = 0;
+            }
+        } while (opcao != 4);
+    }
+
+    private void exibirLista(String tipoLista) {
+        List<Serie> lista = usuarioController.getListaSeries(tipoLista);
+        
+        System.out.println("\n════════ " + getNomeFormatadoLista(tipoLista) + " ════════");
+        if (lista.isEmpty()) {
+            System.out.println("Nenhuma série nesta lista.");
+            return;
+        }
+
+        for (int i = 0; i < lista.size(); i++) {
+            System.out.printf("%d. %s\n", i + 1, lista.get(i).getInfoFormatada());
+        }
+        
+        gerenciarLista(tipoLista, lista);
+    }
+
+    private String getNomeFormatadoLista(String tipoLista) {
+        return switch (tipoLista) {
+            case "watchlist" -> "ASSISTIR MAIS TARDE";
+            case "watched" -> "JÁ ASSISTIDAS";
+            case "favorites" -> "FAVORITAS";
+            default -> "LISTA";
+        };
+    }
+
+    private void gerenciarLista(String tipoLista, List<Serie> lista) {
+        System.out.println("\n1. Ordenar lista");
+        System.out.println("2. Remover série");
+        System.out.println("3. Voltar");
+        System.out.print("Escolha uma opção (1-3): ");
+
+        try {
+            int opcao = Integer.parseInt(scanner.nextLine());
+            
+            switch (opcao) {
+                case 1:
+                    ordenarLista(tipoLista, lista);
+                    break;
+                case 2:
+                    removerSerie(tipoLista, lista);
+                    break;
+                case 3:
+                    break;
+                default:
+                    System.out.println("⚠ Opção inválida.");
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("⚠ Por favor, digite um número válido.");
+        }
+    }
+
+    private void ordenarListas() {
+        if (usuarioController.getUsuarioAtual() == null) {
+            System.out.println("\n⚠ Você precisa estar logado para ordenar listas.");
+            return;
+        }
+
+        System.out.println("\n🔃 ORDENAR LISTAS");
+        System.out.println("1. Por avaliação (maior primeiro)");
+        System.out.println("2. Por nome (A-Z)");
+        System.out.println("3. Por data de lançamento");
+        System.out.println("4. Voltar");
+        System.out.print("Escolha um critério (1-4): ");
+
+        try {
+            int opcao = Integer.parseInt(scanner.nextLine());
+            
+            if (opcao >= 1 && opcao <= 3) {
+                System.out.println("\nSelecione a lista para ordenar:");
+                System.out.println("1. Assistir mais tarde");
+                System.out.println("2. Já assistidas");
+                System.out.println("3. Favoritas");
+                System.out.print("Escolha (1-3): ");
+                
+                int listaOpcao = Integer.parseInt(scanner.nextLine());
+                String tipoLista = switch (listaOpcao) {
+                    case 1 -> "watchlist";
+                    case 2 -> "watched";
+                    case 3 -> "favorites";
+                    default -> null;
+                };
+                
+                if (tipoLista != null) {
+                    ordenarLista(tipoLista, usuarioController.getListaSeries(tipoLista), opcao);
+                }
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("⚠ Por favor, digite um número válido.");
+        }
+    }
+
+    private void ordenarLista(String tipoLista, List<Serie> lista, int criterio) {
+        Comparator<Serie> comparator = switch (criterio) {
+            case 1 -> Comparator.comparing(Serie::getRating).reversed();
+            case 2 -> Comparator.comparing(Serie::getName);
+            case 3 -> Comparator.comparing(Serie::getPremiered);
+            default -> null;
+        };
+        
+        if (comparator != null) {
+            lista.sort(comparator);
+            usuarioController.salvarDados();
+            System.out.println("\n✔ Lista ordenada com sucesso!");
+            exibirLista(tipoLista);
+        }
+    }
+
+    private void removerSerie(String tipoLista, List<Serie> lista) {
+        System.out.print("\nDigite o número da série a remover: ");
+        try {
+            int numero = Integer.parseInt(scanner.nextLine()) - 1;
+            if (numero >= 0 && numero < lista.size()) {
+                Serie serie = lista.get(numero);
+                usuarioController.removerSerieLista(serie, tipoLista);
+                System.out.println("\n✔ Série removida com sucesso!");
+                exibirLista(tipoLista);
+            } else {
+                System.out.println("⚠ Número inválido.");
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("⚠ Por favor, digite um número válido.");
+        }
+    }
+}

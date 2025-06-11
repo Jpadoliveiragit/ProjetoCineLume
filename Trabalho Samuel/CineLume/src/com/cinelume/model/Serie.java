@@ -14,7 +14,6 @@ public class Serie {
     private Network network;
     private String summary;
 
-    // Classes internas para mapeamento aninhado
     public static class Rating {
         private Double average;
         public Double getAverage() { return average; }
@@ -25,17 +24,25 @@ public class Serie {
         public String getName() { return name; }
     }
 
-    // Getters
+    // Getters seguros
     public int getId() { return id; }
-    public String getName() { return name; }
-    public String getLanguage() { return language; }
-    public List<String> getGenres() { return genres; }
-    public Double getRating() { return rating != null ? rating.getAverage() : null; }
-    public String getStatus() { return status; }
-    public String getPremiered() { return premiered; }
-    public String getEnded() { return ended; }
-    public String getNetworkName() { 
-        return network != null ? network.getName() : "Desconhecido"; 
+    public String getName() { return name != null ? name : "Sem nome"; }
+    public String getLanguage() { return language != null ? language : "Idioma desconhecido"; }
+    public List<String> getGenres() { return genres != null ? genres : List.of(); }
+    public Double getRating() { return rating != null && rating.getAverage() != null ? rating.getAverage() : 0.0; }
+    public String getStatus() { return status != null ? status : "Status desconhecido"; }
+    public String getPremiered() { return premiered != null ? premiered : "Data desconhecida"; }
+    public String getEnded() { return ended != null ? ended : "Em exibição"; }
+    public String getNetworkName() { return network != null ? network.getName() : "Desconhecido"; }
+    public String getSummary() { return summary != null ? summary : "Sem descrição disponível."; }
+
+    // Método para exibição formatada
+    public String getInfoFormatada() {
+        return String.format("%s (⭐ %.1f) - %s | %s | %s",
+            getName(),
+            getRating(),
+            getLanguage(),
+            getPremiered().substring(0, 4), // Mostra apenas o ano
+            getStatus());
     }
-    public String getSummary() { return summary; }
 }

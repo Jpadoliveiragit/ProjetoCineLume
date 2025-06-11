@@ -2,75 +2,159 @@ package com.cinelume.view;
 
 import com.cinelume.controller.SerieController;
 import com.cinelume.controller.UsuarioController;
-import com.cinelume.model.Usuario;
-import com.cinelume.util.InputUtils;
+import com.cinelume.model.Serie;
+import java.util.List;
+import java.util.Scanner;
 
 public class MenuView {
+    private final Scanner scanner;
     private final UsuarioController usuarioController;
     private final SerieController serieController;
 
-    // Construtor
     public MenuView(UsuarioController usuarioController, SerieController serieController) {
+        this.scanner = new Scanner(System.in);
         this.usuarioController = usuarioController;
         this.serieController = serieController;
     }
 
     public void exibirBoasVindas() {
-        System.out.println("=============================");
-        System.out.println("   CINELUME - GERENCIADOR");
-        System.out.println("=============================");
+        System.out.println("=================================");
+        System.out.println("|      BEM-VINDO AO CINELUME     |");
+        System.out.println("=================================\n");
     }
 
     public void realizarLogin() {
-        String nome = InputUtils.lerString("\nDigite seu nome: ");
-        usuarioController.login(nome);
-        System.out.println("\nBem-vindo, " + nome + "!");
+        System.out.print("Digite seu nome de usuário: ");
+        String nomeUsuario = scanner.nextLine();
+        usuarioController.login(nomeUsuario);
+        System.out.println("\nLogin realizado com sucesso!\n");
     }
 
     public void exibirMenuPrincipal() {
         int opcao;
         do {
-            System.out.println("\n======== MENU ========");
-            System.out.println("1. Buscar Series");
+            System.out.println("======== MENU PRINCIPAL ========");
+            System.out.println("1. Buscar Séries");
             System.out.println("2. Minhas Listas");
-            System.out.println("3. Sair");
+            System.out.println("3. Ordenar Listas");
+            System.out.println("4. Sair");
+            System.out.print("Escolha: ");
             
-            opcao = InputUtils.lerInt("Escolha uma opcao: ", 1, 3);
-            
-            switch (opcao) {
-                case 1:
-                    buscarSeries();
-                    break;
-                case 2:
-                    exibirListas();
-                    break;
+            try {
+                opcao = Integer.parseInt(scanner.nextLine());
+                
+                switch (opcao) {
+                    case 1:
+                        buscarSeries();
+                        break;
+                    case 2:
+                        exibirMenuListas();
+                        break;
+                    case 3:
+                        ordenarListas();
+                        break;
+                    case 4:
+                        System.out.println("\nAté logo!");
+                        break;
+                    default:
+                        System.out.println("\nOpção inválida. Tente novamente.\n");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("\nPor favor, digite um número válido.\n");
+                opcao = 0;
             }
-        } while (opcao != 3);
+        } while (opcao != 4);
     }
 
     private void buscarSeries() {
-        String termo = InputUtils.lerString("\nDigite o nome da serie: ");
-        var resultados = serieController.buscarSeries(termo);
+        System.out.print("\nDigite o nome da série: ");
+        String query = scanner.nextLine().trim();
         
-        if (resultados.isEmpty()) {
-            System.out.println("Nenhum resultado encontrado.");
-        } else {
-            System.out.println("\nRESULTADOS:");
-            for (int i = 0; i < resultados.size(); i++) {
-                var serie = resultados.get(i);
-                System.out.printf("%d. %s (%s) - Nota: %.1f\n",
-                    i + 1,
-                    serie.getName(),
-                    serie.getPremiered() != null ? serie.getPremiered().substring(0, 4) : "Ano desconhecido",
-                    serie.getRating() != null ? serie.getRating() : 0.0);
+        if (query.isEmpty()) {
+            System.out.println("\nO termo de busca não pode ser vazio.\n");
+            return;
+        }
+
+        try {
+            List<Serie> resultados = serieController.buscarSeries(query);
+            exibirResultadosSeries(resultados);
+            
+            if (!resultados.isEmpty()) {
+                System.out.print("\nDeseja adicionar alguma série a uma lista? (S/N): ");
+                String resposta = scanner.nextLine();
+                
+                if (resposta.equalsIgnoreCase("S")) {
+                    adicionarSerieLista(resultados);
+                }
             }
+        } catch (Exception e) {
+            System.err.println("\n[ERRO] Ocorreu um problema na busca: " + e.getMessage());
         }
     }
 
-    private void exibirListas() {
-        Usuario usuario = usuarioController.getUsuarioAtual();
-        System.out.println("\nMINHAS LISTAS:");
-        System.out.println("- Favoritos: " + usuario.getFavoritos().size() + " itens");
-        System.out.println("- Assistidas: " + usuario.getAssistidas().size() + " itens");
+    private void exibirResultadosSeries(List<Serie> series) {
+        System.out.println("\n=== RESULTADOS ===");
+        if (series.isEmpty()) {
+            System.out.println("Nenhuma série encontrada.");
+            return;
+        }
+
+        for (int i = 0; i < series.size(); i++) {
+            System.out.printf("%d. %s\n", i + 1, series.get(i).getInfoFormatada());
+        }
+    }
+
+    private void adicionarSerieLista(List<Serie> series) {
+        try {
+            System.out.print("\nDigite o número da série: ");
+            int numeroSerie = Integer.parseInt(scanner.nextLine()) - 1;
+            
+            if (numeroSerie < 0 || numeroSerie >= series.size()) {
+                System.out.println("Número inválido.");
+                return;
+            }
+
+            Serie serieSelecionada = series.get(numeroSerie);
+            
+            System.out.println("\n=== LISTAS DISPONÍVEIS ===");
+            System.out.println("1. Assistir mais tarde");
+            System.out.println("2. Já assistidas");
+            System.out.println("3. Favoritas");
+            System.out.print("Escolha a lista: ");
+            
+            int opcaoLista = Integer.parseInt(scanner.nextLine());
+            String tipoLista;
+            
+            switch (opcaoLista) {
+                case 1:
+                    tipoLista = "watchlist";
+                    break;
+                case 2:
+                    tipoLista = "watched";
+                    break;
+                case 3:
+                    tipoLista = "favorites";
+                    break;
+                default:
+                    System.out.println("Opção inválida.");
+                    return;
+            }
+            
+            usuarioController.adicionarSerieLista(serieSelecionada, tipoLista);
+            System.out.println("\nSérie adicionada com sucesso à lista: " + tipoLista);
+            
+        } catch (NumberFormatException e) {
+            System.out.println("Por favor, digite um número válido.");
+        }
+    }
+
+    private void exibirMenuListas() {
+        System.out.println("\n=== MINHAS LISTAS ===");
+        System.out.println("Funcionalidade em desenvolvimento...\n");
+    }
+
+    private void ordenarListas() {
+        System.out.println("\n=== ORDENAR LISTAS ===");
+        System.out.println("Funcionalidade em desenvolvimento...\n");
     }
 }
