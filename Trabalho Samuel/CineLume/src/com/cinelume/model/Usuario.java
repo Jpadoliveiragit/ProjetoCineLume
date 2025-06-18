@@ -1,71 +1,52 @@
 package com.cinelume.model;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Usuario {
-    private String nome;
-    private List<Serie> favoritos = new ArrayList<>();
-    private List<Serie> assistidas = new ArrayList<>();
-    private List<Serie> paraAssistir = new ArrayList<>();
+    private final String nome;
+    private final Map<String, List<Serie>> listas;
 
     public Usuario(String nome) {
-        if (nome == null || nome.trim().isEmpty()) {
-            throw new IllegalArgumentException("Nome do usuário não pode ser vazio");
-        }
         this.nome = nome;
+        this.listas = new HashMap<>();
+        this.listas.put("favorites", new ArrayList<>());
+        this.listas.put("watched", new ArrayList<>());
+        this.listas.put("watchlist", new ArrayList<>());
     }
 
-    /**
-     * Adiciona uma série à lista especificada
-     * @param serie Série a ser adicionada
-     * @param tipoLista "favoritos", "assistidas" ou "paraAssistir" (ou equivalentes em inglês)
-     * @throws IllegalArgumentException Se a série for nula ou o tipo de lista for inválido
-     */
-    public void adicionarSerie(Serie serie, String tipoLista) {
-        if (serie == null) {
-            throw new IllegalArgumentException("Série não pode ser nula");
+    public void adicionarSerie(String tipoLista, Serie serie) {
+        if (!listas.get(tipoLista).contains(serie)) {
+            listas.get(tipoLista).add(serie);
         }
-        getLista(tipoLista).add(serie);
     }
 
-    /**
-     * Obtém a lista correspondente ao tipo especificado
-     * @param tipo Tipo de lista ("favoritos", "assistidas" ou "paraAssistir")
-     * @return Lista de séries correspondente
-     * @throws IllegalArgumentException Se o tipo for inválido
-     */
-    public List<Serie> getLista(String tipo) {
-        return switch (tipo.toLowerCase()) {
-            case "favorites", "favoritos" -> favoritos;
-            case "watched", "assistidas" -> assistidas;
-            case "watchlist", "paraassistir" -> paraAssistir;
-            default -> throw new IllegalArgumentException("Tipo de lista inválido: " + tipo);
+    public boolean removerSerie(String tipoLista, Serie serie) {
+        return listas.get(tipoLista).remove(serie);
+    }
+
+    public void ordenarLista(String tipoLista, String criterio) {
+        Comparator<Serie> comparator = switch (criterio.toLowerCase()) {
+            case "nome" -> Comparator.comparing(Serie::getNome);
+            case "nota" -> Comparator.comparingDouble(Serie::getNota).reversed();
+            case "status" -> Comparator.comparing(Serie::getStatus);
+            case "data" -> Comparator.comparing(Serie::getDataEstreia);
+            default -> null;
         };
-    }
-
-    // Getters específicos para cada lista
-    public List<Serie> getFavoritos() {
-        return new ArrayList<>(favoritos); // Retorna cópia para evitar modificações externas
-    }
-
-    public List<Serie> getAssistidas() {
-        return new ArrayList<>(assistidas);
-    }
-
-    public List<Serie> getParaAssistir() {
-        return new ArrayList<>(paraAssistir);
-    }
-
-    // Getters e Setters
-    public String getNome() { 
-        return nome; 
-    }
-    
-    public void setNome(String nome) { 
-        if (nome == null || nome.trim().isEmpty()) {
-            throw new IllegalArgumentException("Nome do usuário não pode ser vazio");
+        
+        if (comparator != null) {
+            listas.get(tipoLista).sort(comparator);
         }
-        this.nome = nome; 
+    }
+
+    public List<Serie> getLista(String tipoLista) {
+        return new ArrayList<>(listas.get(tipoLista));
+    }
+
+    public String getNome() {
+        return nome;
     }
 }

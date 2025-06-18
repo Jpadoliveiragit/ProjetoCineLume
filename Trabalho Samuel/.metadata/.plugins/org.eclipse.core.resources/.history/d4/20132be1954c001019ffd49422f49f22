@@ -1,0 +1,20 @@
+package com.cinelume.util;
+
+import com.cinelume.model.Serie;
+import com.cinelume.model.Usuario;
+
+public class DataLoader {
+    public static void carregarDadosIniciais(Usuario usuario) {
+        String[] seriesIniciais = {"Breaking Bad", "Game of Thrones", "Stranger Things"};
+        ApiClient apiClient = new ApiClient();
+
+        for (String nomeSerie : seriesIniciais) {
+            try {
+                Serie serie = Serie.fromJson(apiClient.buscarSerie(nomeSerie));
+                usuario.adicionarSerie("favorites", serie);
+            } catch (Exception e) {
+                System.err.println("Erro ao carregar " + nomeSerie + ": " + e.getMessage());
+            }
+        }
+    }
+}

@@ -1,0 +1,59 @@
+package com.cinelume.controller;
+
+import com.cinelume.model.Usuario;
+import com.cinelume.util.JsonDataManager;
+import com.cinelume.util.DataLoader;
+import java.util.List;
+
+public class UsuarioController {
+    private Usuario usuarioAtual;
+
+    public void realizarLogin(String nomeUsuario) {
+        try {
+            this.usuarioAtual = JsonDataManager.carregarUsuario(nomeUsuario);
+            
+            if (this.usuarioAtual == null) {
+                this.usuarioAtual = new Usuario(nomeUsuario);
+                DataLoader.carregarDadosIniciais(this.usuarioAtual);
+                JsonDataManager.salvarUsuario(this.usuarioAtual);
+                System.out.println("Novo usuário criado com sucesso!");
+            } else {
+                System.out.println("Bem-vindo de volta, " + nomeUsuario + "!");
+            }
+        } catch (Exception e) {
+            System.err.println("Aviso: Usando usuário temporário. Dados não serão salvos.");
+            this.usuarioAtual = new Usuario(nomeUsuario);
+        }
+    }
+
+    public void adicionarSerie(String tipoLista, Serie serie) {
+        usuarioAtual.adicionarSerie(tipoLista, serie);
+        salvarDados();
+    }
+
+    public void removerSerie(String tipoLista, Serie serie) {
+        usuarioAtual.removerSerie(tipoLista, serie);
+        salvarDados();
+    }
+
+    public void ordenarLista(String tipoLista, String criterio) {
+        usuarioAtual.ordenarLista(tipoLista, criterio);
+        salvarDados();
+    }
+
+    public List<Serie> getLista(String tipoLista) {
+        return usuarioAtual.getLista(tipoLista);
+    }
+
+    private void salvarDados() {
+        try {
+            JsonDataManager.salvarUsuario(usuarioAtual);
+        } catch (Exception e) {
+            System.err.println("Erro ao salvar dados: " + e.getMessage());
+        }
+    }
+
+    public Usuario getUsuarioAtual() {
+        return usuarioAtual;
+    }
+}

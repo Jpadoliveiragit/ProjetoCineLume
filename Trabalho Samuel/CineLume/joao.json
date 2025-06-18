@@ -17,6 +17,25 @@
       "status": "Running",
       "premiered": "2016-07-15",
       "summary": "\u003cp\u003eWhen a young boy vanishes, a small town uncovers a mystery involving secret experiments, terrifying supernatural forces and one strange little girl.\u003c/p\u003e"
+    },
+    {
+      "id": 431,
+      "name": "Friends",
+      "language": "English",
+      "genres": [
+        "Comedy",
+        "Romance"
+      ],
+      "rating": {
+        "average": 8.5
+      },
+      "status": "Ended",
+      "premiered": "1994-09-22",
+      "ended": "2004-05-06",
+      "network": {
+        "name": "NBC"
+      },
+      "summary": "\u003cp\u003eSix young (20-something) people from New York City (Manhattan), on their own and struggling to survive in the real world, find the companionship, comfort and support they get from each other to be the perfect antidote to the pressures of life.\u003c/p\u003e\u003cp\u003eThis average group of buddies goes through massive mayhem, family trouble, past and future romances, fights, laughs, tears and surprises as they learn what it really means to be a friend.\u003c/p\u003e"
     }
   ],
   "paraAssistir": [

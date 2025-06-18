@@ -1,0 +1,23 @@
+package com.cinelume.util;
+
+import com.cinelume.model.Serie;
+import java.util.Comparator;
+
+public class SeriesComparators {
+    public static Comparator<Serie> porNome() {
+        return Comparator.comparing(Serie::getNome);
+    }
+
+    public static Comparator<Serie> porNota() {
+        return Comparator.comparingDouble(Serie::getNota).reversed();
+    }
+
+    public static Comparator<Serie> porStatus() {
+        return Comparator.comparing(Serie::getStatus);
+    }
+
+    public static Comparator<Serie> porData() {
+        return Comparator.comparing(s -> s.getDataEstreia() != null ? 
+            s.getDataEstreia() : LocalDate.MIN);
+    }
+}

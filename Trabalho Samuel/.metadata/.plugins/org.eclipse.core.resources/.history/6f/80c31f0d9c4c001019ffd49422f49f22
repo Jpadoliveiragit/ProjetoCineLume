@@ -1,0 +1,27 @@
+package com.cinelume.controller;
+
+import com.cinelume.model.Serie;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class UsuarioController {
+    private final Map<String, List<Serie>> listasDoUsuario;
+
+    public UsuarioController() {
+        this.listasDoUsuario = new HashMap<>();
+        this.listasDoUsuario.put("favoritos", new ArrayList<>());
+    }
+
+    public void adicionarSerie(String lista, Serie serie) {
+        if (serie == null) {
+            throw new IllegalArgumentException("Série não pode ser nula.");
+        }
+        listasDoUsuario.computeIfAbsent(lista, k -> new ArrayList<>()).add(serie);
+    }
+
+    public List<Serie> getLista(String lista) {
+        return listasDoUsuario.getOrDefault(lista, new ArrayList<>());
+    }
+}

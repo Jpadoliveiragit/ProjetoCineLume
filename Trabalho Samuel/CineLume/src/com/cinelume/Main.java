@@ -1,27 +1,12 @@
 package com.cinelume;
 
-import com.cinelume.controller.SerieController;
 import com.cinelume.controller.UsuarioController;
 import com.cinelume.view.MenuView;
 
 public class Main {
     public static void main(String[] args) {
-        try {
-            // Inicializa controladores
-            UsuarioController usuarioController = new UsuarioController();
-            SerieController serieController = new SerieController();
-            
-            // Configura interface
-            MenuView menuView = new MenuView(usuarioController, serieController);
-            
-            // Fluxo principal
-            menuView.exibirBoasVindas();
-            menuView.realizarLogin();
-            menuView.exibirMenuPrincipal();
-            
-        } catch (Exception e) {
-            System.err.println("[ERRO] Ocorreu um problema: " + e.getMessage());
-            System.out.println("Reinicie o aplicativo.");
-        }
+        UsuarioController controller = new UsuarioController();
+        MenuView menu = new MenuView(controller);
+        menu.exibirMenu();
     }
 }

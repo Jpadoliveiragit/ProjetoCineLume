@@ -1,48 +1,113 @@
 package com.cinelume.model;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Serie {
-    private int id;
-    private String name;
-    private String language;
-    private List<String> genres;
-    private Rating rating;
-    private String status;
-    private String premiered;
-    private String ended;
-    private Network network;
-    private String summary;
+    private final String nome;
+    private final String idioma;
+    private final List<String> generos;
+    private final double nota;
+    private final String status;
+    private final LocalDate dataEstreia;
+    private final String emissora;
 
-    public static class Rating {
-        private Double average;
-        public Double getAverage() { return average; }
+    public Serie(String nome, String idioma, List<String> generos, double nota,
+                String status, String dataEstreia, String emissora) {
+        this.nome = nome;
+        this.idioma = idioma;
+        this.generos = generos;
+        this.nota = nota;
+        this.status = status;
+        this.dataEstreia = parseDate(dataEstreia);
+        this.emissora = emissora;
     }
 
-    public static class Network {
-        private String name;
-        public String getName() { return name; }
+    private LocalDate parseDate(String date) {
+        if (date == null || date.equalsIgnoreCase("N/A")) return null;
+        try {
+            return LocalDate.parse(date, DateTimeFormatter.ISO_DATE);
+        } catch (Exception e) {
+            System.err.println("Erro ao parsear data: " + date);
+            return null;
+        }
     }
 
-    // Getters seguros
-    public int getId() { return id; }
-    public String getName() { return name != null ? name : "Sem nome"; }
-    public String getLanguage() { return language != null ? language : "Idioma desconhecido"; }
-    public List<String> getGenres() { return genres != null ? genres : List.of(); }
-    public Double getRating() { return rating != null && rating.getAverage() != null ? rating.getAverage() : 0.0; }
-    public String getStatus() { return status != null ? status : "Status desconhecido"; }
-    public String getPremiered() { return premiered != null ? premiered : "Data desconhecida"; }
-    public String getEnded() { return ended != null ? ended : "Em exibição"; }
-    public String getNetworkName() { return network != null ? network.getName() : "Desconhecido"; }
-    public String getSummary() { return summary != null ? summary : "Sem descrição disponível."; }
+    public static Serie fromJson(JsonObject json) {
+        List<String> generos = new ArrayList<>();
+        if (json.has("genres") && json.get("genres").isJsonArray()) {
+            JsonArray generosJson = json.getAsJsonArray("genres");
+            generosJson.forEach(e -> {
+                if (!e.isJsonNull()) generos.add(e.getAsString());
+            });
+        }
 
-    // Método para exibição formatada
-    public String getInfoFormatada() {
-        return String.format("%s (⭐ %.1f) - %s | %s | %s",
-            getName(),
-            getRating(),
-            getLanguage(),
-            getPremiered().substring(0, 4), // Mostra apenas o ano
-            getStatus());
+        double nota = 0.0;
+        if (json.has("rating") && json.get("rating").isJsonObject()) {
+            try {
+                nota = json.getAsJsonObject("rating").get("average").getAsDouble();
+            } catch (Exception e) {
+                System.err.println("Erro ao ler nota: " + e.getMessage());
+            }
+        }
+
+        String dataEstreia = null;
+        if (json.has("premiered") && !json.get("premiered").isJsonNull()) {
+            dataEstreia = json.get("premiered").getAsString();
+        }
+
+        String emissora = "N/A";
+        if (json.has("network") && json.get("network").isJsonObject()) {
+            try {
+                emissora = json.getAsJsonObject("network").get("name").getAsString();
+            } catch (Exception e) {
+                System.err.println("Erro ao ler emissora: " + e.getMessage());
+            }
+        }
+
+        return new Serie(
+            json.get("name").getAsString(),
+            json.get("language").getAsString(),
+            generos,
+            nota,
+            json.get("status").getAsString(),
+            dataEstreia,
+            emissora
+        );
+    }
+
+    // Getters
+    public String getNome() { return nome; }
+    public String getIdioma() { return idioma; }
+    public List<String> getGeneros() { return generos; }
+    public double getNota() { return nota; }
+    public String getStatus() { return status; }
+    public LocalDate getDataEstreia() { return dataEstreia; }
+    public String getEmissora() { return emissora; }
+
+    public String getDataEstreiaFormatada() {
+        return dataEstreia != null ? 
+            dataEstreia.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "N/A";
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+            """
+            Nome: %s
+            Idioma: %s
+            Gêneros: %s
+            Nota: %.1f
+            Status: %s
+            Estreia: %s
+            Emissora: %s
+            """,
+            nome, idioma, String.join(", ", generos), nota, status,
+            getDataEstreiaFormatada(), emissora
+        );
     }
 }

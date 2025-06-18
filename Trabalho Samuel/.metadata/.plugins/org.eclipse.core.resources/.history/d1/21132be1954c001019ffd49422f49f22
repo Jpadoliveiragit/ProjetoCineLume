@@ -1,0 +1,180 @@
+package com.cinelume.view;
+
+import com.cinelume.controller.SerieController;
+import com.cinelume.controller.UsuarioController;
+import com.cinelume.model.Serie;
+import java.util.Scanner;
+import java.util.List;
+
+public class MenuView {
+    private final UsuarioController usuarioController;
+    private final SerieController serieController;
+    private final Scanner scanner;
+
+    public MenuView(UsuarioController usuarioController, SerieController serieController) {
+        this.usuarioController = usuarioController;
+        this.serieController = serieController;
+        this.scanner = new Scanner(System.in);
+    }
+
+    public void exibirBoasVindas() {
+        System.out.println("=== BEM-VINDO AO CINELUME ===");
+    }
+
+    public void realizarLogin() {
+        System.out.print("Digite seu nome: ");
+        String nome = scanner.nextLine();
+        usuarioController.realizarLogin(nome);
+    }
+
+    public void exibirMenuPrincipal() {
+        while (true) {
+            System.out.println("\n=== MENU PRINCIPAL ===");
+            System.out.println("1. Buscar série");
+            System.out.println("2. Ver favoritos");
+            System.out.println("3. Gerenciar listas");
+            System.out.println("4. Sair");
+            System.out.print("Escolha: ");
+
+            int opcao = lerInteiro();
+            switch (opcao) {
+                case 1 -> buscarSerie();
+                case 2 -> exibirLista("favorites");
+                case 3 -> gerenciarListas();
+                case 4 -> { return; }
+                default -> System.out.println("Opção inválida!");
+            }
+        }
+    }
+
+    private void buscarSerie() {
+        System.out.print("\nNome da série: ");
+        String nomeSerie = scanner.nextLine();
+
+        try {
+            Serie serie = serieController.buscarSerie(nomeSerie);
+            exibirDetalhesSerie(serie);
+            exibirOpcoesListas(serie);
+        } catch (Exception e) {
+            System.err.println("Erro na busca: " + e.getMessage());
+        }
+    }
+
+    private void exibirDetalhesSerie(Serie serie) {
+        System.out.println("\n=== DETALHES ===");
+        System.out.println("Nome: " + serie.getNome());
+        System.out.println("Idioma: " + serie.getIdioma());
+        System.out.println("Gêneros: " + String.join(", ", serie.getGeneros()));
+        System.out.println("Nota: " + serie.getNota());
+        System.out.println("Status: " + serie.getStatus());
+        System.out.println("Estreia: " + serie.getDataEstreiaFormatada());
+        System.out.println("Emissora: " + serie.getEmissora());
+    }
+
+    private void exibirOpcoesListas(Serie serie) {
+        System.out.println("\n1. Adicionar aos favoritos");
+        System.out.println("2. Adicionar à watchlist");
+        System.out.println("3. Adicionar às assistidas");
+        System.out.println("4. Voltar");
+        System.out.print("Escolha: ");
+
+        int opcao = lerInteiro();
+        String lista = switch (opcao) {
+            case 1 -> "favorites";
+            case 2 -> "watchlist";
+            case 3 -> "watched";
+            default -> null;
+        };
+
+        if (lista != null) {
+            usuarioController.adicionarSerie(lista, serie);
+            System.out.println("Série adicionada!");
+        }
+    }
+
+    private void gerenciarListas() {
+        System.out.println("\n=== LISTAS ===");
+        System.out.println("1. Favoritos");
+        System.out.println("2. Watchlist");
+        System.out.println("3. Assistidas");
+        System.out.println("4. Voltar");
+        System.out.print("Escolha: ");
+
+        int opcao = lerInteiro();
+        String lista = switch (opcao) {
+            case 1 -> "favorites";
+            case 2 -> "watchlist";
+            case 3 -> "watched";
+            default -> null;
+        };
+
+        if (lista != null) exibirOpcoesLista(lista);
+    }
+
+    private void exibirOpcoesLista(String tipoLista) {
+        List<Serie> series = usuarioController.getLista(tipoLista);
+        
+        System.out.println("\n=== " + tipoLista.toUpperCase() + " ===");
+        series.forEach(serie -> System.out.println("- " + serie.getNome()));
+
+        System.out.println("\n1. Ordenar");
+        System.out.println("2. Remover série");
+        System.out.println("3. Voltar");
+        System.out.print("Escolha: ");
+
+        int opcao = lerInteiro();
+        switch (opcao) {
+            case 1 -> ordenarLista(tipoLista);
+            case 2 -> removerSerie(tipoLista);
+        }
+    }
+
+    private void ordenarLista(String tipoLista) {
+        System.out.println("\nOrdenar por:");
+        System.out.println("1. Nome");
+        System.out.println("2. Nota");
+        System.out.println("3. Status");
+        System.out.println("4. Data");
+        System.out.print("Escolha: ");
+
+        int opcao = lerInteiro();
+        String criterio = switch (opcao) {
+            case 1 -> "nome";
+            case 2 -> "nota";
+            case 3 -> "status";
+            case 4 -> "data";
+            default -> null;
+        };
+
+        if (criterio != null) {
+            usuarioController.ordenarLista(tipoLista, criterio);
+            System.out.println("Lista ordenada!");
+        }
+    }
+
+    private void removerSerie(String tipoLista) {
+        System.out.print("\nNome da série a remover: ");
+        String nomeSerie = scanner.nextLine();
+        
+        usuarioController.getLista(tipoLista).stream()
+            .filter(s -> s.getNome().equalsIgnoreCase(nomeSerie))
+            .findFirst()
+            .ifPresentOrElse(
+                serie -> {
+                    usuarioController.removerSerie(tipoLista, serie);
+                    System.out.println("Série removida!");
+                },
+                () -> System.out.println("Série não encontrada")
+            );
+    }
+
+    private int lerInteiro() {
+        while (true) {
+            try {
+                return Integer.parseInt(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.print("Digite um número válido: ");
+            }
+        }
+    }
+}

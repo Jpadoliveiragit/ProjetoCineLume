@@ -1,0 +1,23 @@
+package com.cinelume.util;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import org.json.JSONObject;
+import java.io.IOException;
+
+public class ApiClient {
+    private static final String BASE_URL = "https://api.tvmaze.com/singlesearch/shows?q=";
+    private final OkHttpClient client = new OkHttpClient();
+
+    public JSONObject buscarSerie(String nomeSerie) throws IOException {
+        Request request = new Request.Builder()
+            .url(BASE_URL + nomeSerie.replace(" ", "%20"))
+            .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) throw new IOException("Erro na API: " + response.code());
+            return new JSONObject(response.body().string());
+        }
+    }
+}

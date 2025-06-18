@@ -1,0 +1,62 @@
+package com.cinelume.model;
+
+import com.google.gson.JsonObject;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class Serie {
+    private final String nome;
+    private final String idioma;
+    private final List<String> generos;
+    private final double nota;
+    private final String status;
+    private final LocalDate dataEstreia;
+    private final String emissora;
+
+    public Serie(String nome, String idioma, List<String> generos, double nota,
+                String status, String dataEstreia, String emissora) {
+        this.nome = nome;
+        this.idioma = idioma;
+        this.generos = generos;
+        this.nota = nota;
+        this.status = status;
+        this.dataEstreia = parseDate(dataEstreia);
+        this.emissora = emissora;
+    }
+
+    private LocalDate parseDate(String date) {
+        if (date == null || date.equalsIgnoreCase("N/A")) return null;
+        return LocalDate.parse(date, DateTimeFormatter.ISO_DATE);
+    }
+
+    public static Serie fromJson(JsonObject json) {
+        return new Serie(
+            json.get("name").getAsString(),
+            json.get("language").getAsString(),
+            json.getAsJsonArray("genres").asList().stream()
+                .map(e -> e.getAsString())
+                .collect(Collectors.toList()),
+            json.getAsJsonObject("rating").get("average").getAsDouble(),
+            json.get("status").getAsString(),
+            json.has("premiered") && !json.get("premiered").isJsonNull() ? 
+                json.get("premiered").getAsString() : null,
+            json.has("network") && json.get("network").isJsonObject() ?
+                json.getAsJsonObject("network").get("name").getAsString() : "N/A"
+        );
+    }
+
+    // Getters (mantidos iguais)
+    public String getNome() { return nome; }
+    public String getIdioma() { return idioma; }
+    public List<String> getGeneros() { return generos; }
+    public double getNota() { return nota; }
+    public String getStatus() { return status; }
+    public LocalDate getDataEstreia() { return dataEstreia; }
+    public String getDataEstreiaFormatada() {
+        return dataEstreia != null ? 
+            dataEstreia.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "N/A";
+    }
+    public String getEmissora() { return emissora; }
+}

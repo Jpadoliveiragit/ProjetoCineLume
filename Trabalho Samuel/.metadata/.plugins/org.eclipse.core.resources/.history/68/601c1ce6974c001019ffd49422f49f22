@@ -1,0 +1,15 @@
+package com.cinelume.controller;
+
+import com.cinelume.model.Serie;
+import com.cinelume.util.ApiClient;
+import org.json.JSONObject;
+import java.io.IOException;
+
+public class SerieController {
+    private final ApiClient apiClient = new ApiClient();
+
+    public Serie buscarSerie(String nome) throws IOException {
+        JSONObject json = apiClient.buscarSerie(nome);
+        return Serie.fromJson(json);
+    }
+}
